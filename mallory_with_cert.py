@@ -229,14 +229,6 @@ def handle_command(line: str):
 
 
 def handle_client(alice_sock, addr):
-    """
-    Relay-only Mallory:
-       - Relays Alice's initial handshake to Bob unchanged
-       - Relays Bob's handshake to Alice unchanged
-       - Transparently forwards encrypted packets
-       - Gatekeeper can hold/drop ciphertext packets
-       - Mallory cannot decrypt anything
-    """
     print("[Mallory] Alice connected from", addr)
 
     try:
@@ -324,7 +316,6 @@ def handle_client(alice_sock, addr):
 
 def main():
     print("Available commands:")
-    print("  /mode relay | /mode mitm")
     print("  /gatekeeper on|off")
     print('  /msg alice "text"  (requires AES session)')
     print('  /msg bob   "text"')
