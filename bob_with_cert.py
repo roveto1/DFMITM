@@ -48,11 +48,6 @@ def derive_key_from_int(shared_int):
    hkdf = HKDF(algorithm=hashes.SHA256(), length=32, salt=None, info=b"dh-chat")
    return hkdf.derive(shared_bytes)
 
-# def derive_key_from_int(shared_int):
-#     shared_bytes = shared_int.to_bytes((shared_int.bit_length() + 7)//8 or 1, 'big')
-#     # Use first 32 bytes of the raw DH output, padded on the left if needed
-#     return shared_bytes.rjust(32, b'\x00')[:32]
-
 def dh_priv(): return int.from_bytes(os.urandom(32), "big") % (p-2) + 2
 def dh_pub(priv): return pow(g, priv, p)
 def dh_shared(pub, priv): return pow(pub, priv, p)
