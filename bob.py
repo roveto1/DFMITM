@@ -29,12 +29,16 @@ def derive_key_from_int(shared_int):
     hkdf = HKDF(algorithm=hashes.SHA256(), length=32, salt=None, info=b"dh-chat")
     return hkdf.derive(shared_bytes)
 
-def dh_priv(): return int.from_bytes(os.urandom(32), "big") % (p-2) + 2
-def dh_pub(priv): return pow(g, priv, p)
-def dh_shared(pub, priv): return pow(pub, priv, p)
+def dh_priv(): 
+    return int.from_bytes(os.urandom(32), "big") % (p-2) + 2 # 2 <= priv <= p-1
+
+def dh_pub(priv): 
+    return pow(g, priv, p) # g^priv mod p
+
+def dh_shared(pub, priv): 
+    return pow(pub, priv, p) # pub^priv mod p
 
 def recv_loop(conn, aes):
-    """Receives messages from Alice."""
     try:
         while True:
             msg = recv_obj(conn)
@@ -82,7 +86,7 @@ def main():
 
     shared = dh_shared(a_pub, b_priv)
     key = derive_key_from_int(shared)
-    aes = AESGCM(key)
+    aes = AESGCM(key) # https://stackoverflow.com/questions/1220751/how-to-choose-an-aes-encryption-mode-cbc-ecb-ctr-ocb-cfb
 
     print("[Bob] Key derived. Chat ready.")
 
