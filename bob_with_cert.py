@@ -4,7 +4,7 @@ from utils import send_obj, recv_obj
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding, ec
 from cryptography import x509
 
 p_hex = """
@@ -56,18 +56,18 @@ def dh_shared(pub, priv): return pow(pub, priv, p)
 # Certificate validation
 # ---------------------------
 def verify_certificate(cert_pem: str):
+    """Verifies that a certificate is valid and signed by the CA."""
     cert = x509.load_pem_x509_certificate(cert_pem.encode())
 
-    # Check issuer (CA)
+    # Check issuer
     if cert.issuer != ca_cert.subject:
-        raise Exception("Certificate is NOT signed by CA")
+        raise Exception("Certificate NOT signed by CA")
 
-    # Verify certificate signature
+    # Verify signature using EC (since CA key is EC)
     ca_public_key.verify(
         cert.signature,
         cert.tbs_certificate_bytes,
-        padding.PKCS1v15(),
-        cert.signature_hash_algorithm
+        ec.ECDSA(cert.signature_hash_algorithm)
     )
 
     return cert
@@ -79,18 +79,17 @@ def sign(pub_int):
     data = str(pub_int).encode()
     signature = bob_priv.sign(
         data,
-        padding.PKCS1v15(),
-        hashes.SHA256()
+        ec.ECDSA(hashes.SHA256())
     )
     return base64.b64encode(signature).decode()
 
 def verify_signature(pub_int, signature_b64, cert):
     signature = base64.b64decode(signature_b64)
+
     cert.public_key().verify(
         signature,
         str(pub_int).encode(),
-        padding.PKCS1v15(),
-        hashes.SHA256()
+        ec.ECDSA(hashes.SHA256())
     )
 
 
